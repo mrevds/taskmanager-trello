@@ -11,4 +11,18 @@ export class ProjectRepository {
         data:  dataProject
     })
   }
+  deleteProject(projectID: number) {
+      return this.prisma.project.delete({
+          where: {
+              id: projectID
+          },
+      })
+  }
+  getProject(projectID: number) {
+      return this.prisma.project.findFirst({
+          where: {
+              id: projectID
+          }
+      })
+  }
 }
