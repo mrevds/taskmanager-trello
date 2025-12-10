@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { Prisma } from '../prisma/client/client'
+import { Prisma } from '../prisma/client/client';
 
 @Injectable()
 export class ProjectRepository {
@@ -8,21 +8,27 @@ export class ProjectRepository {
 
   createProject(dataProject: Prisma.ProjectCreateInput) {
     return this.prisma.project.create({
-        data:  dataProject
-    })
+      data: dataProject,
+    });
   }
   deleteProject(projectID: number) {
-      return this.prisma.project.delete({
-          where: {
-              id: projectID
-          },
-      })
+    return this.prisma.project.delete({
+      where: {
+        id: projectID,
+      },
+    });
   }
   getProject(projectID: number) {
-      return this.prisma.project.findFirst({
-          where: {
-              id: projectID
-          }
-      })
+    return this.prisma.project.findFirst({
+      where: {
+        id: projectID,
+      },
+    });
+  }
+  updateProject(projectID: number, dataProject: Prisma.ProjectUpdateInput) {
+    return this.prisma.project.update({
+      where: { id: projectID },
+      data: dataProject,
+    });
   }
 }
