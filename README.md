@@ -1,98 +1,385 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Task Manager API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+REST API для управления проектами и задачами, построенный на NestJS + PostgreSQL + Prisma.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Установка и запуск
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Требования
+- Node.js LTS (v18+)
+- PostgreSQL
+- npm/yarn
 
-## Project setup
-
+### Подготовка
 ```bash
-$ npm install
+# Установить зависимости
+npm install
+
+# Настроить .env (DATABASE_URL, JWT_SECRET)
+cp .env.example .env
+
+# Применить миграции
+npx prisma migrate deploy
+
+# Запустить в разработке
+npm run start:dev
+
+# Собрать production
+npm run build && npm run start:prod
 ```
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## API Endpoints
 
-# watch mode
-$ npm run start:dev
+### 🔐 Аутентификация (Auth)
 
-# production mode
-$ npm run start:prod
+#### Регистрация пользователя
+```http
+POST /users/signup
+Content-Type: application/json
+
+{
+  "username": "john_doe",
+  "password": "securePassword123"
+}
+```
+**Требования:** username (4-16 символов), password (8-20 символов)
+
+**Response (201):**
+```json
+{
+  "id": 1,
+  "username": "john_doe",
+  "role": "USER",
+  "createdAt": "2025-12-11T10:30:00Z",
+  "updatedAt": "2025-12-11T10:30:00Z"
+}
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+#### Вход (получить JWT токен)
+```http
+POST /auth/signin
+Content-Type: application/json
 
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+{
+  "username": "john_doe",
+  "password": "securePassword123"
+}
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
-
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+**Response (200):**
+```json
+{
+  "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "userId": 1,
+  "username": "john_doe"
+}
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+---
 
-## Resources
+#### Выход (разлогиниться)
+```http
+POST /auth/logout
+Authorization: Bearer {access_token}
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+**Response (200):**
+```json
+{
+  "message": "Logout successful"
+}
+```
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+---
 
-## Support
+### 📋 Проекты (Projects)
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+#### Создать проект
+```http
+POST /project/new
+Authorization: Bearer {access_token}
+Content-Type: application/json
 
-## Stay in touch
+{
+  "title": "My Awesome Project",
+  "description": "Project for managing team tasks"
+}
+```
+**Требования:** title (1-56 символов), description опционально (0-256 символов)
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+**Response (201):**
+```json
+{
+  "id": 5,
+  "title": "My Awesome Project",
+  "description": "Project for managing team tasks",
+  "ownerId": 1,
+  "createdAt": "2025-12-11T10:35:00Z",
+  "updatedAt": "2025-12-11T10:35:00Z"
+}
+```
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+#### Обновить проект
+```http
+PUT /project/:projectId
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "title": "Updated Project Name",
+  "description": "New description"
+}
+```
+**Параметры:** projectId - ID проекта
+
+**Response (200):**
+```json
+{
+  "id": 5,
+  "title": "Updated Project Name",
+  "description": "New description",
+  "ownerId": 1,
+  "createdAt": "2025-12-11T10:35:00Z",
+  "updatedAt": "2025-12-11T10:40:00Z"
+}
+```
+
+---
+
+#### Удалить проект
+```http
+DELETE /project/:projectId
+Authorization: Bearer {access_token}
+```
+**Параметры:** projectId - ID проекта
+
+**Response (200):**
+```json
+{
+  "id": 5,
+  "title": "My Awesome Project",
+  "description": "Project for managing team tasks",
+  "ownerId": 1,
+  "createdAt": "2025-12-11T10:35:00Z",
+  "updatedAt": "2025-12-11T10:40:00Z"
+}
+```
+
+---
+
+### 👥 Члены проекта (Project Members)
+
+#### Добавить члена в проект
+```http
+POST /project-member/:projectId
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "userId": 2
+}
+```
+**Параметры:** projectId - ID проекта  
+**Требования:** userId - ID пользователя, которого нужно добавить
+
+**Response (201):**
+```json
+{
+  "id": 8,
+  "projectId": 5,
+  "userId": 2,
+  "role": "MEMBER",
+  "joinedAt": "2025-12-11T10:45:00Z"
+}
+```
+
+---
+
+#### Получить членов проекта
+```http
+GET /project-member/:projectId
+Authorization: Bearer {access_token}
+```
+**Параметры:** projectId - ID проекта
+
+**Response (200):**
+```json
+[
+  {
+    "id": 7,
+    "projectId": 5,
+    "userId": 1,
+    "role": "OWNER",
+    "joinedAt": "2025-12-11T10:35:00Z"
+  },
+  {
+    "id": 8,
+    "projectId": 5,
+    "userId": 2,
+    "role": "MEMBER",
+    "joinedAt": "2025-12-11T10:45:00Z"
+  }
+]
+```
+
+---
+
+#### Удалить члена из проекта
+```http
+DELETE /project-member/:projectId
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "userId": 2
+}
+```
+**Параметры:** projectId - ID проекта
+
+**Response (200):**
+```json
+{
+  "message": "Member removed successfully"
+}
+```
+
+---
+
+### ✅ Задачи (Tasks)
+
+#### Создать задачу
+```http
+POST /task/:projectId
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "title": "Implement authentication",
+  "description": "Add JWT auth to API",
+  "priority": "HIGH",
+  "status": "TODO",
+  "dueData": "2025-12-25T23:59:59Z"
+}
+```
+**Параметры:** projectId - ID проекта  
+**Требования:**
+- title (4-32 символа)
+- description (0-256 символов)
+- priority (опционально): `LOW`, `MEDIUM`, `HIGH` (по умолчанию `MEDIUM`)
+- status (опционально): `TODO`, `INPROGRESS`, `DONE` (по умолчанию `TODO`)
+- dueData (опционально): ISO 8601 дата
+
+**Response (201):**
+```json
+{
+  "id": 12,
+  "title": "Implement authentication",
+  "description": "Add JWT auth to API",
+  "status": "TODO",
+  "priority": "HIGH",
+  "projectId": 5,
+  "assigneeId": 1,
+  "dueData": "2025-12-25T23:59:59Z",
+  "createdAt": "2025-12-11T10:50:00Z",
+  "updatedAt": "2025-12-11T10:50:00Z"
+}
+```
+
+---
+
+#### Обновить задачу
+```http
+PUT /task/:taskId
+Authorization: Bearer {access_token}
+Content-Type: application/json
+
+{
+  "title": "Implement authentication (updated)",
+  "status": "INPROGRESS",
+  "priority": "MEDIUM"
+}
+```
+**Параметры:** taskId - ID задачи
+
+**Response (200):**
+```json
+{
+  "id": 12,
+  "title": "Implement authentication (updated)",
+  "description": "Add JWT auth to API",
+  "status": "INPROGRESS",
+  "priority": "MEDIUM",
+  "projectId": 5,
+  "assigneeId": 1,
+  "dueData": "2025-12-25T23:59:59Z",
+  "createdAt": "2025-12-11T10:50:00Z",
+  "updatedAt": "2025-12-11T10:52:00Z"
+}
+```
+
+---
+
+#### Удалить задачу
+```http
+DELETE /task/:taskId
+Authorization: Bearer {access_token}
+```
+**Параметры:** taskId - ID задачи
+
+**Response (200):**
+```json
+{
+  "id": 12,
+  "title": "Implement authentication",
+  "description": "Add JWT auth to API",
+  "status": "TODO",
+  "priority": "HIGH",
+  "projectId": 5,
+  "assigneeId": 1,
+  "dueData": "2025-12-25T23:59:59Z",
+  "createdAt": "2025-12-11T10:50:00Z",
+  "updatedAt": "2025-12-11T10:50:00Z"
+}
+```
+
+---
+
+## 📌 Примечания
+
+- **Аутентификация**: Все роуты, кроме `/users/signup` и `/auth/signin`, требуют JWT токен в заголовке `Authorization: Bearer {token}`
+- **Enum значения:**
+  - Status: `TODO`, `INPROGRESS`, `DONE`
+  - Priority: `LOW`, `MEDIUM`, `HIGH`
+  - Role: `USER`, `ADMIN`
+  - ProjectRole: `OWNER`, `ADMIN`, `MEMBER`
+- **Дата**: Используется ISO 8601 формат (например, `2025-12-25T23:59:59Z`)
+
+---
+
+## 🔗 Curl примеры для быстрого тестирования
+
+```bash
+# Регистрация
+curl -X POST http://localhost:3000/users/signup \
+  -H "Content-Type: application/json" \
+  -d '{"username":"john_doe","password":"securePassword123"}'
+
+# Вход
+curl -X POST http://localhost:3000/auth/signin \
+  -H "Content-Type: application/json" \
+  -d '{"username":"john_doe","password":"securePassword123"}'
+
+# Создать проект (используйте токен из входа)
+curl -X POST http://localhost:3000/project/new \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{"title":"My Project","description":"Description"}'
+```
+
